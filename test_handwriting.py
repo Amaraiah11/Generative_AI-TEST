@@ -1,5 +1,11 @@
+import os
 import sys
-sys.path.insert(0, './generative-discriminative-lab')
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+for p in [BASE_DIR, os.path.join(BASE_DIR, "generative-discriminative-lab")]:
+    if os.path.exists(p) and p not in sys.path:
+        sys.path.insert(0, p)
+
 from PIL import Image, ImageDraw
 from backend.preprocessing import preprocess_image
 from backend.inference import load_or_train_classifier, classify_digit
