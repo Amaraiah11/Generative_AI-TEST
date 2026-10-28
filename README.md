@@ -1,7 +1,7 @@
 # 🔬 Generative vs Discriminative Model Lab — Interactive Streamlit MNIST Synthesizer
 
 <p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=581C87,7E22CE,C084FC&height=220&section=header&text=Generative%20vs%20Discriminative%20Lab&fontSize=40&fontColor=ffffff&fontAlignY=38&desc=Interactive%20Streamlit%20MNIST%20Synthesis%20%26%20CNN%20Classification&descSize=16&descAlignY=60&descAlign=50" width="100%" alt="Generative vs Discriminative Lab Banner" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:581C87,50:7E22CE,100:C084FC&customColorList=581C87,7E22CE,C084FC&height=220&section=header&text=Generative%20vs%20Discriminative%20Lab&fontSize=38&fontColor=ffffff&fontAlignY=38&desc=Interactive%20Streamlit%20MNIST%20Synthesis%20%26%20CNN%20Classification&descSize=15&descAlignY=60&descAlign=50" width="100%" alt="Generative vs Discriminative Lab Banner" />
 </p>
 
 <p align="center">
@@ -211,5 +211,5 @@ Contributions, bug reports, and architectural discussions are welcome!
 </p>
 
 <p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=581C87,7E22CE,C084FC&height=100&section=footer" width="100%" alt="Footer Banner" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:581C87,50:7E22CE,100:C084FC&customColorList=581C87,7E22CE,C084FC&height=100&section=footer" width="100%" alt="Footer Banner" />
 </p>
