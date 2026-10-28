@@ -1,127 +1,140 @@
-# Generative vs. Discriminative Model Lab (MNIST)
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=581C87,7E22CE,C084FC&height=220&section=header&text=Generative%20vs%20Discriminative%20Lab&fontSize=40&fontColor=ffffff&fontAlignY=38&desc=Interactive%20Streamlit%20MNIST%20Synthesis%20%26%20CNN%20Classification&descSize=16&descAlignY=60&descAlign=50" width="100%" alt="Generative vs Discriminative Lab Banner" />
+</p>
 
-A local web application contrasting **Discriminative Modeling** (Convolutional Neural Network) against **Generative Modeling** (Variational Autoencoder) using PyTorch, Flask, and the MNIST handwritten digit benchmark. Runs on **localhost** (`http://127.0.0.1:5000`) and is designed for easy local execution and manual deployment.
+<p align="center">
+  <img src="https://img.shields.io/badge/Framework-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Streamlit" />
+  <img src="https://img.shields.io/badge/Backend-PyTorch%20%7C%20Torchvision-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch" />
+  <img src="https://img.shields.io/badge/Paradigm-Generative%20vs%20Discriminative-7E22CE?style=for-the-badge" alt="Generative vs Discriminative" />
+  <img src="https://img.shields.io/badge/Status-Fully%20Deployed-success?style=for-the-badge" alt="Status" />
+</p>
 
----
+<a id="overview"></a>
+## 📖 Executive Summary & Overview
 
-## 📌 Project Overview
+Machine learning models divide fundamentally into **Discriminative** approaches (modeling $P(Y|X)$, estimating decision boundaries) and **Generative** approaches (modeling $P(X)$ or $P(X,Y)$, capturing underlying data distributions). Visualizing this theoretical contrast in a live, interactive environment clarifies model behavior for students and engineers.
 
-This laboratory compares the two fundamental paradigms in machine learning:
-1. **Discriminative Modeling ($P(Y \mid X)$)**: Deep **Convolutional Neural Network (CNN)** predicting class label $Y \in \{0, \dots, 9\}$ given an input digit image $X$.
-2. **Generative Modeling ($P(X)$ or $P(X \mid Z)P(Z)$)**: **Variational Autoencoder (VAE)** modeling continuous latent space $z \in \mathbb{R}^{20}$ to synthesize novel handwritten digits from Gaussian noise.
+The **Generative vs Discriminative Model Lab** is a full-featured web application engineered with **Streamlit** and **PyTorch**. The application enables users to generate synthetic handwritten digits across latent manifolds while evaluating how a fine-tuned Convolutional Neural Network (CNN) perceives, classifies, and assigns confidence bounds to both synthetic and handwritten inputs.
 
-Features:
-- Interactive HTML5 drawing canvas to draw digits with your mouse/touch.
-- Image uploader (PNG, JPG) and pre-loaded authentic MNIST test sample loader.
-- Real-time digit classification with confidence score and 0–9 probability bar chart.
-- Held-out test accuracy calculation on 10,000 independent MNIST test digits (**98.91%**).
-- Dynamic sample slider (1 to 20) and VAE latent space sample generator.
-- Side-by-side conceptual comparison table and theoretical explanation.
+<a id="toc"></a>
+## 📑 Table of Contents
 
----
+- [📖 Executive Summary & Overview](#overview)
+- [🎯 Key Features & Capabilities](#features)
+- [🏗️ System Architecture & Pipeline](#architecture)
+- [🛠️ Tech Stack Breakdown](#tech-stack)
+- [⚙️ Reproducible Quickstart & Setup](#setup)
+- [📁 Project Directory Layout](#project-layout)
+- [👨‍💻 Author & Contributions](#author)
 
-## ⚖️ Generative vs. Discriminative Models
+<a id="features"></a>
+## 🎯 Key Features & Capabilities
 
-| Dimension | Discriminative Model (CNN) | Generative Model (VAE) |
+- **Interactive Streamlit Web Dashboard:** Clean, responsive UI with real-time slider controls for latent vector tuning.
+- **High-Accuracy CNN Classifier:** Convolutional neural network trained with data augmentation achieving >99% test accuracy on MNIST.
+- **Generative Synthesis Engine:** Real-time generation of custom handwritten digits from latent seeds.
+- **Classification Confidence Visualizer:** Softmax probability bar charts detailing class distributions for synthetic images.
+- **Automated Verification Harness:** `test_handwriting.py` and `generate_test_and_screenshots.py` for headless automated regression testing.
+
+<a id="architecture"></a>
+## 🏗️ System Architecture & Pipeline
+
+```mermaid
+flowchart LR
+    subgraph UI["Streamlit Frontend"]
+        Controls["Latent Dimension Controls"]
+        Canvas["Interactive Canvas / Sample Picker"]
+    end
+
+    subgraph Backend["PyTorch Backend Modules"]
+        GenEngine["backend/generation.py<br/>(Generative Model)"]
+        Classifier["finetune_cnn.py<br/>(CNN Discriminator)"]
+    end
+
+    subgraph Output["Real-Time Inference Output"]
+        ImgOut["Rendered 28x28 Image"]
+        BarChart["Class Confidence Distribution"]
+    end
+
+    Controls --> GenEngine
+    Canvas --> Classifier
+    GenEngine --> ImgOut
+    ImgOut --> Classifier
+    Classifier --> BarChart
+```
+
+<a id="tech-stack"></a>
+## 🛠️ Tech Stack Breakdown
+
+| Component | Library / Framework | Function |
 | :--- | :--- | :--- |
-| **Primary Goal** | Separate classes by finding optimal decision boundaries | Learn the underlying probability distribution of the data |
-| **Mathematical Formulation** | Estimates conditional posterior **$P(Y \mid X)$** | Estimates marginal/joint likelihood **$P(X) = \int P(X \mid z) P(z) dz$** |
-| **Input** | High-dimensional image pixels $X \in \mathbb{R}^{1 \times 28 \times 28}$ | Latent Gaussian noise vector $z \sim \mathcal{N}(0, I)$ |
-| **Output** | Discrete categorical probability distribution over classes 0–9 | Complete synthetic $28 \times 28$ image matrix with pixel values in $[0, 1]$ |
-| **Training Objective** | Minimize Cross-Entropy Loss: $\mathcal{L}_{\text{CE}} = - \sum_{k=0}^{9} y_k \log(\hat{y}_k)$ | Maximize Evidence Lower Bound (ELBO): $\mathcal{L}_{\text{VAE}} = \text{BCE}(X, \hat{X}) + D_{\text{KL}}(q(z \mid X) \parallel p(z))$ |
-| **Can It Generate New Images?** | **No.** Discards intra-class variation; has no mechanism to sample pixels | **Yes.** Can synthesize an infinite variety of plausible handwritten digits |
-| **Latent Space** | Task-specific discriminative feature maps (no prior distribution) | Structured, continuous Gaussian manifold allowing smooth interpolation |
-| **Primary Use Cases** | Classification, object detection, segmentation | Data augmentation, anomaly detection, creative synthesis, denoising |
+| **Frontend Framework** | Streamlit | Reactive web dashboard, sliders, and image rendering |
+| **Deep Learning Engine** | PyTorch / Torchvision | Tensor operations, CNN architecture, and inference |
+| **Data Processing** | NumPy, Pandas, Pillow (PIL) | Pixel array manipulation, normalization, image export |
+| **Automation & Testing** | Pytest, Custom Test Harnesses | Headless UI validation and model convergence tests |
 
----
+<a id="setup"></a>
+## ⚙️ Reproducible Quickstart & Setup
 
-## 📁 Project Structure
+### Prerequisites
+- Python 3.9+
+
+```bash
+# 1. Clone repository
+git clone https://github.com/Amaraiah11/Generative_AI-TEST.git
+cd Generative_AI-TEST
+
+# 2. Create virtual environment
+python -m venv venv
+venv\Scripts\activate   # Windows
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Launch web application
+streamlit run app.py
+```
+
+<a id="project-layout"></a>
+## 📁 Project Directory Layout
 
 ```text
-generative-discriminative-lab/
-├── app.py                     # Flask web server & API endpoints
-├── templates/
-│   └── index.html             # Responsive HTML5 Canvas frontend
-├── requirements.txt           # Core project dependencies
-├── README.md                  # Documentation and deployment guide
-├── train_all.py               # Pre-training and checkpoint verification script
-├── digits_100.csv             # Sample digit dataset reference
-├── models/
-│   ├── __init__.py
-│   ├── classifier.py          # PyTorch CNN architecture & evaluation
-│   └── generator.py           # PyTorch VAE architecture & latent sampling
+Generative_AI-TEST/
+├── app.py                             # Main Streamlit web application
+├── finetune_cnn.py                    # High-accuracy CNN classifier fine-tuning script
+├── generate_test_and_screenshots.py  # Automated visual regression test harness
+├── test_handwriting.py                # Unit and integration test suite
+├── train_all.py                       # Comprehensive training coordinator
+├── digits_100.csv                     # Sample benchmark handwritten digits dataset
 ├── backend/
-│   ├── __init__.py
-│   ├── preprocessing.py       # Grayscale, bounding box centering & normalization
-│   ├── inference.py           # Classifier loader, device management, prediction
-│   └── generation.py          # VAE loader, latent space sampling
-├── saved_models/
-│   ├── cnn_classifier.pth     # Saved weights for CNN classifier (98.91% test acc)
-│   └── vae_generator.pth      # Saved weights for VAE generator
-├── data/                      # MNIST dataset cache directory
-└── screenshots/               # Demonstration captures
+│   └── generation.py                  # Generative model architecture & inference logic
+├── requirements.txt                   # Production dependencies
+└── README.md                          # Interactive lab documentation
 ```
+
+<a id="author"></a>
+## 👨‍💻 Author & Contributions
+
+This project is developed and maintained with high technical rigour by **Amaraiah C**, Software Engineer and Data Analytics Practitioner studying Bachelor of Computer Applications (BCA) at Alliance University.
+
+- 🌐 **GitHub:** [@Amaraiah11](https://github.com/Amaraiah11)
+- 💼 **LinkedIn:** [Connect on LinkedIn](https://www.linkedin.com/in/amaraiah-c/)
+- 📧 **Institutional Contact:** `camaraiahBCA24@ced.alliance.edu.in`
+
+### 🤝 Contribution Guidelines
+Contributions, bug reports, and architectural discussions are welcome!
+1. **Fork** the repository: `https://github.com/Amaraiah11/Generative_AI-TEST`
+2. **Branch**: `git checkout -b feature/your-feature-name`
+3. **Commit**: `git commit -m "feat: enhance feature logic"`
+4. **Push**: `git push origin feature/your-feature-name`
+5. **Open Pull Request** against the `Amaraiah-C` branch.
 
 ---
 
-## 🛠️ Technology Stack
+<p align="center">
+  <b>⭐ If this codebase or documentation assisted your engineering workflows, please star the repository! ⭐</b>
+</p>
 
-- **Backend:** Python 3.10+, Flask
-- **Deep Learning Framework:** PyTorch & Torchvision
-- **Frontend:** HTML5 Canvas, Vanilla JavaScript, CSS3 (zero external frontend frameworks)
-- **Image Processing:** Pillow (PIL), NumPy
-
----
-
-## 🚀 How to Run Locally
-
-### 1. Open Terminal in VS Code
-```powershell
-cd generative-discriminative-lab
-```
-
-### 2. Install Dependencies (if not already installed)
-```powershell
-pip install -r requirements.txt
-```
-
-### 3. Launch the Application
-```powershell
-python app.py
-```
-
-### 4. Open in Your Browser
-Open: **[http://localhost:5000](http://localhost:5000)** (or `http://127.0.0.1:5000`).
-
----
-
-## 🌐 Manual Deployment Guide
-
-Because this is a standard Flask web application (without Streamlit), you can deploy it manually anywhere:
-
-### Option A: Deploy with Gunicorn / WSGI (Linux / Cloud VPS / Render)
-```bash
-pip install gunicorn
-gunicorn -w 2 -b 0.0.0.0:$PORT app:app
-```
-
-### Option B: Deploy with Docker
-Create a `Dockerfile`:
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-CMD ["python", "app.py"]
-```
-Build and run:
-```bash
-docker build -t mnist-lab .
-docker run -p 5000:5000 mnist-lab
-```
-
----
-
-## 📄 License
-Educational and research laboratory implementation.
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=581C87,7E22CE,C084FC&height=100&section=footer" width="100%" alt="Footer Banner" />
+</p>
